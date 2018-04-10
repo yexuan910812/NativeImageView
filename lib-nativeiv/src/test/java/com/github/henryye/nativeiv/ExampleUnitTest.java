@@ -1,4 +1,4 @@
-package com.github.henryye.lib_nativeiv;
+package com.github.henryye.nativeiv;
 
 import org.junit.Test;
 

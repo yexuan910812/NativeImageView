@@ -22,6 +22,18 @@ android {
         }
     }
 
+    sourceSets {
+        main {
+            jniLibs.srcDir 'src/main/cpp'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+
 }
 
 dependencies {
