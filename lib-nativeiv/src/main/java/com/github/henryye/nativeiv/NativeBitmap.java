@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
 
+import com.github.henryye.nativeiv.util.FormatUtil;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -26,11 +28,17 @@ class NativeBitmap implements BitmapWrapper.IBitmap<Long> {
 
     @Override
     public boolean accept(InputStream ins, Bitmap.Config config) {
+        FormatUtil.PictureFormat format = FormatUtil.getImageFormat(ins);
+        // current only supports png and jpeg, with config argb8888, argb4444 and argb565
+        if((format == FormatUtil.PictureFormat.JPG || format == FormatUtil.PictureFormat.PNG) && (config == Bitmap.Config.ARGB_8888 || config == Bitmap.Config.ARGB_4444 || config == Bitmap.Config.RGB_565)) {
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean acceptRegion(InputStream ins, Bitmap.Config config) {
+        // 目前不能native decode region
         return false;
     }
 

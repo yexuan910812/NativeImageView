@@ -31,6 +31,7 @@ public class BitmapWrapper {
         Undefined
     }
 
+    @SuppressWarnings("unused")
     public void decodeImageFile(@NonNull String filePath, Bitmap.Config config) {
         if(!FileUtil.fileExists(filePath)) {
             Log.e(TAG, "hy: %s not exists");
@@ -47,7 +48,29 @@ public class BitmapWrapper {
             try {
                 mCurrentChosenBitmapImp.decodeInputStream(ins, config);
             } catch (IOException e) {
-                Log.printErrStackTrace(TAG, e, "hy: decodeImageFile");
+                Log.printErrStackTrace(TAG, e, "hy: decodeInputStream");
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public void decodeImageFileRegion(@NonNull String filePath, Rect regionRect, Bitmap.Config config) {
+        if(!FileUtil.fileExists(filePath)) {
+            Log.e(TAG, "hy: %s not exists");
+            return;
+        }
+        InputStream ins = FileUtil.convertToStream(filePath);
+        decodeRegionInputStream(ins, regionRect, config);
+    }
+
+    public void decodeRegionInputStream(InputStream ins, Rect rect, Bitmap.Config config) {
+        clearUp();
+        if(ins != null) {
+            chooseDecoderRegion(ins, config);
+            try {
+                mCurrentChosenBitmapImp.decodeInputStreamRegion(ins, rect, config);
+            } catch (IOException e) {
+                Log.printErrStackTrace(TAG, e, "hy: decodeRegionInputStream");
             }
         }
     }
@@ -58,6 +81,7 @@ public class BitmapWrapper {
         mDummyBitmapDecoderImp.recycle();
     }
 
+    @SuppressWarnings("unused")
     public void recycle() {
         Log.i(TAG, "hy: recycling: %s", mCurrentChosenBitmapImp.getType());
         mCurrentChosenBitmapImp.recycle();
@@ -73,9 +97,20 @@ public class BitmapWrapper {
         mCurrentChosenBitmapImp = mDummyBitmapDecoderImp;
     }
 
+    private void chooseDecoderRegion(InputStream ins, Bitmap.Config config) {
+        if(mNativeBitmapDecoderImp.acceptRegion(ins, config)) {
+            mCurrentChosenBitmapImp = mNativeBitmapDecoderImp;
+        }
+        if(mLegacyBitmapDecoderImp.acceptRegion(ins, config)) {
+            mCurrentChosenBitmapImp = mLegacyBitmapDecoderImp;
+        }
+        mCurrentChosenBitmapImp = mDummyBitmapDecoderImp;
+    }
+
+    @SuppressWarnings("unused")
     public void setImageBitmap(Bitmap bitmap) {
         clearUp();
-        mLegacyBitmapDecoderImp = mLegacyBitmapDecoderImp;
+        mCurrentChosenBitmapImp = mLegacyBitmapDecoderImp;
         mLegacyBitmapDecoderImp.forceSet(bitmap);
     }
 
@@ -91,6 +126,7 @@ public class BitmapWrapper {
         void recycle();
     }
 
+    @SuppressWarnings("unused")
     public void setJavaBitmapDecoder(IBitmap<Bitmap> customBitmapDecoder) {
         synchronized (DECLOCK) {
             this.mLegacyBitmapDecoderImp.recycle();
