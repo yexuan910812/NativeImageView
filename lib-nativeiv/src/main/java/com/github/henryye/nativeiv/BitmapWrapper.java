@@ -10,6 +10,8 @@ import com.github.henryye.nativeiv.util.FileUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by henryye on 2018/4/10.
@@ -21,9 +23,17 @@ public class BitmapWrapper {
     private IBitmap<Long> mNativeBitmapDecoderImp = new NativeBitmap();
     private IBitmap<Object> mDummyBitmapDecoderImp = new DummyBitmapDecoder();
 
+    private Set<IBitmap> mDecoderImps = new HashSet<>(3);
+
     private IBitmap mCurrentChosenBitmapImp = mDummyBitmapDecoderImp;
 
     private final Object DECLOCK = new Object();
+
+    public BitmapWrapper() {
+        mDecoderImps.add(mLegacyBitmapDecoderImp);
+        mDecoderImps.add(mNativeBitmapDecoderImp);
+        mDecoderImps.add(mDummyBitmapDecoderImp);
+    }
 
     enum BitmapType {
         Native,
@@ -76,9 +86,11 @@ public class BitmapWrapper {
     }
 
     private void clearUp() {
-        mLegacyBitmapDecoderImp.recycle();
-        mNativeBitmapDecoderImp.recycle();
-        mDummyBitmapDecoderImp.recycle();
+        for(IBitmap item : mDecoderImps) {
+            if(item != null) {
+                item.recycle();
+            }
+        }
     }
 
     @SuppressWarnings("unused")
